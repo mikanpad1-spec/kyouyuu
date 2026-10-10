@@ -1,461 +1,447 @@
-```html
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#7069b7">
-<title>共有アカウント管理</title>
+<title>共有ログイン管理</title>
 <style>
-:root{--ink:#262744;--muted:#777b9b;--purple:#7069b7;--line:#e5e6f5;--bg:#f7f7fc}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-header{background:linear-gradient(120deg,#7771c0,#918bcf);color:white;padding:22px 18px}
-.wrap{max-width:900px;margin:auto}
-.brand{font-size:22px;font-weight:800}
-.sub{font-size:13px;opacity:.9;margin-top:5px}
-main{padding:18px 14px 32px}
-.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #38356c0a}
-h2{font-size:17px;margin:0 0 14px}
-.current{background:#eeefff;border-color:#dfe0ff;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.current strong{font-size:21px}
-.muted{color:var(--muted);font-size:13px;line-height:1.6}
-.members{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.member{border-radius:16px;padding:15px 12px;border:1px solid var(--line);background:white;min-width:0}
-.member h3{margin:0 0 9px;font-size:18px}
-.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:750;margin-bottom:12px;background:#f0f1f8;color:#676b8a}
-.status.using{background:#ddf7ed;color:#138564}
-.status.want{background:#ffe5ed;color:#c63761}
-button{width:100%;border:0;border-radius:11px;padding:12px 9px;font-size:14px;font-weight:750;cursor:pointer;margin-top:8px;background:#716bb9;color:white}
-button.secondary{background:#eef0fa;color:#51557b}
-button.danger{background:#f04f79;color:white}
-button:disabled{opacity:.4;cursor:not-allowed}
-.notice{background:#f0f1ff;border-color:#e0e2ff;font-size:13px;line-height:1.8;color:#64678d}
-.activity{list-style:none;padding:0;margin:0}
-.activity li{padding:11px 0;border-bottom:1px solid #f0f0f8;font-size:13px;line-height:1.5}
-.activity li:last-child{border:0}
-.setup{font-size:13px;line-height:1.8;color:#6e7292}
-.setup code{background:#f0f1f8;padding:2px 5px;border-radius:5px}
-footer{text-align:center;color:#989bb4;font-size:12px;padding:4px 16px 28px}
-@media(max-width:620px){
- .members{grid-template-columns:1fr}
- .member{padding:15px}
- .member h3{display:inline-block;margin-right:8px}
- .member button{max-width:none}
- .current strong{font-size:18px}
+:root {
+  font-family: system-ui, sans-serif;
+  color: #252638;
+  background: #f4f5fb;
 }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 20px 14px 40px; }
+main { max-width: 760px; margin: auto; }
+h1 { font-size: 25px; margin-bottom: 6px; }
+.sub { color: #73768a; font-size: 14px; }
+.panel {
+  background: white;
+  border: 1px solid #e5e7f0;
+  border-radius: 16px;
+  padding: 18px;
+  margin-top: 16px;
+  box-shadow: 0 4px 18px #24264a08;
+}
+label { display: block; font-size: 14px; margin-bottom: 8px; }
+select, button {
+  font: inherit;
+  border-radius: 10px;
+  padding: 11px 13px;
+}
+select {
+  width: 100%;
+  border: 1px solid #d9dbea;
+  background: white;
+}
+.members {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(190px,1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.member {
+  background: white;
+  border: 1px solid #e5e7f0;
+  border-radius: 15px;
+  padding: 16px;
+  min-width: 0;
+}
+.member h2 { font-size: 19px; margin: 0 0 10px; }
+.status { font-size: 13px; margin: 10px 0; color: #666a7b; }
+.status strong { color: #33364b; }
+button {
+  border: 0;
+  cursor: pointer;
+  font-weight: 650;
+  width: 100%;
+  margin-top: 8px;
+  background: #ededf5;
+  color: #34364d;
+}
+button.primary { background: #5655dc; color: white; }
+button.danger { background: #fff0f0; color: #b33143; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.small { font-size: 12px; color: #777b8d; }
+#connection { font-size: 13px; margin-top: 10px; }
+#activity { padding-left: 20px; }
+#activity li { margin: 8px 0; font-size: 13px; overflow-wrap: anywhere; }
+.empty { color: #85889a; font-size: 14px; }
+footer { margin-top: 24px; text-align: center; color: #898b9b; font-size: 12px; }
 </style>
 </head>
 <body>
-<header>
- <div class="wrap">
-  <div class="brand">🎮 共有アカウント管理</div>
-  <div class="sub">なーな・らび・みかてぃで、順番を見える化</div>
- </div>
-</header>
+<main>
+  <h1>共有ログイン管理</h1>
+  <div class="sub">みんなの使用状況をリアルタイムで共有</div>
 
-<main class="wrap">
- <section class="card current">
-  <div>
-   <div class="muted">現在の利用状況</div>
-   <strong id="currentText">現在、使用中の人はいません</strong>
-   <div class="muted" id="connectionText">接続準備中...</div>
-  </div>
-  <div style="min-width:140px">
-   <button id="logoutCurrent" class="secondary">使用終了</button>
-  </div>
- </section>
+  <section class="panel">
+    <label for="myName">自分の名前</label>
+    <select id="myName">
+      <option value="なーな">なーな</option>
+      <option value="らび">らび</option>
+      <option value="みかてぃ">みかてぃ</option>
+    </select>
+    <div id="connection">Firebaseに接続しています…</div>
+  </section>
 
- <section class="card">
-  <h2>👥 メンバーの状況</h2>
-  <div class="members" id="members"></div>
- </section>
+  <section>
+    <div class="members" id="members"></div>
+  </section>
 
- <section class="card">
-  <h2>🕒 最近の更新！</h2>
-  <ul class="activity" id="activity">
-   <li class="muted">まだ更新はありません。</li>
-  </ul>
-  <button class="secondary" id="clearActivity">履歴を消去</button>
- </section>
+  <section class="panel">
+    <h2>最近の履歴</h2>
+    <ol id="activity"><li class="empty">履歴を読み込み中…</li></ol>
+    <button id="clearHistory" class="danger">履歴を全消去</button>
+  </section>
 
- <section class="card notice">
-  <b>使い方</b><br>
-  ・「使いたい！」を押すと、自分が利用希望中だと表示されます。<br>
-  ・「使用開始」は、実際にゲームへログインできたときに押してください。<br>
-  ・順番の自動決定はせず、誰が使いたいかを全員で確認して交代してください。
- </section>
+  <section class="panel">
+    <h2>使い方</h2>
+    <p class="small">
+      ・使いたいときは「使いたい！」を押してください。<br>
+      ・実際に使用を始めるときは「使用開始」を押してください。<br>
+      ・使い終わったら「使用終了」を押してください。<br>
+      ・名前を選択して、自分が誰なのか設定してください。
+    </p>
+  </section>
 
- <section class="card">
-  <h2>⚙️ 共有設定</h2>
-  <div class="setup" id="setupInfo">
-   Firebaseに接続すると、3人の端末で情報を共有できます。
-  </div>
-  <details style="margin-top:12px">
-   <summary>Firebase接続設定を開く</summary>
-   <p class="setup">FirebaseプロジェクトのWebアプリ設定を貼り付けてください。設定はこのブラウザに保存されます。</p>
-   <label class="muted" for="firebaseConfig">Firebase Web設定（JSON）</label>
-   <textarea id="firebaseConfig" rows="6" style="width:100%;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:10px;font:12px monospace" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"https://...","projectId":"...","appId":"..."}'></textarea>
-   <button id="saveConfig">設定を保存して接続</button>
-   <button class="secondary" id="disconnect">共有接続を解除</button>
-   <div class="muted" id="configStatus" aria-live="polite"></div>
-  </details>
- </section>
+  <footer>共有ログイン管理</footer>
 </main>
 
-<footer>共有アカウント管理ツール · なーな / らび / みかてぃ</footer>
-
 <script type="module">
-import {
- initializeApp,
- getApps,
- getApp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
- getDatabase,
- ref,
- onValue,
- set
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  getDatabase, ref, onValue, set, update, get
+} from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 import {
- getAuth,
- signInAnonymously
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  getAuth, signInAnonymously
+} from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const names = ["なーな","らび","みかてぃ"];
-
-const defaultState = {
- current: null,
- members: Object.fromEntries(names.map(n => [n,{want:false}])),
- activity: []
+// Firebase設定：3人とも入力する必要はありません
+const firebaseConfig = {
+  apiKey: "AIzaSyAVqgTP7iGm703wuDmL66E8PUhVVmdd3Gxc",
+  authDomain: "kyouyuu-account.firebaseapp.com",
+  databaseURL: "https://kyouyuu-account-default-rtdb.firebaseio.com",
+  projectId: "kyouyuu-account",
+  storageBucket: "kyouyuu-account.firebasestorage.app",
+  messagingSenderId: "946109825848",
+  appId: "1:946109825848:web:e330913a022502beb1f7cd",
+  measurementId: "G-QY99E3QLYX"
 };
 
-const $ = id => document.getElementById(id);
+const names = ["なーな", "らび", "みかてぃ"];
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
 
-let state = loadLocal();
-let db = null;
-let auth = null;
-let stopListener = null;
-let remoteRef = null;
-let writing = false;
-let connectionGeneration = 0;
+const statusRef = ref(db, "sharedGameAccount/status");
+const connectionEl = document.getElementById("connection");
+const myNameEl = document.getElementById("myName");
+const membersEl = document.getElementById("members");
+const activityEl = document.getElementById("activity");
 
-function loadLocal(){
- try{
-  const saved = JSON.parse(
-   localStorage.getItem("sharedGameAccountState") || "{}"
-  );
-  return {
-   ...structuredClone(defaultState),
-   ...saved,
-   members:{
-    ...structuredClone(defaultState.members),
-    ...(saved.members || {})
-   },
-   activity:Array.isArray(saved.activity) ? saved.activity : []
+let data = {
+  users: {},
+  activity: []
+};
+let ready = false;
+let busy = false;
+
+for (const name of names) {
+  data.users[name] = {
+    request: false,
+    using: false
   };
- }catch{
-  return structuredClone(defaultState);
- }
 }
 
-function saveLocal(){
- localStorage.setItem("sharedGameAccountState",JSON.stringify(state));
+function safeText(value) {
+  return String(value ?? "");
 }
 
-function log(msg){
- state.activity.unshift({
-  time:new Date().toLocaleTimeString("ja-JP",{
-   hour:"2-digit",
-   minute:"2-digit"
-  }),
-  msg
- });
- state.activity = state.activity.slice(0,8);
+function showTime(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleString("ja-JP", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 }
 
-function render(){
- const current = state.current;
+function render() {
+  membersEl.innerHTML = "";
 
- $("currentText").textContent = current
-  ? `${current} が使用中です`
-  : "現在、使用中の人はいません";
+  for (const name of names) {
+    const user = data.users?.[name] || {};
+    const card = document.createElement("article");
+    card.className = "member";
 
- $("logoutCurrent").disabled = !current;
- $("members").innerHTML = "";
+    const heading = document.createElement("h2");
+    heading.textContent = name;
+    card.appendChild(heading);
 
- for(const n of names){
-  const m = state.members?.[n] || {want:false};
-  const isUsing = current === n;
+    const status = document.createElement("div");
+    status.className = "status";
 
-  const box = document.createElement("article");
-  box.className = "member";
+    if (user.using) {
+      status.textContent = "🟢 使用中";
+    } else if (user.request) {
+      status.textContent = "🟡 使用希望あり";
+    } else {
+      status.textContent = "⚪ 使用していません";
+    }
+    card.appendChild(status);
 
-  const h = document.createElement("h3");
-  h.textContent = n;
-  box.append(h);
+    const requestButton = document.createElement("button");
+    requestButton.textContent = user.request ? "使用希望を取り消す" : "使いたい！";
+    requestButton.disabled = !ready || busy || user.using;
+    requestButton.addEventListener("click", () => {
+      changeUser(name, {
+        request: !user.request
+      }, user.request ? "使用希望を取り消しました" : "使用を希望しました");
+    });
+    card.appendChild(requestButton);
 
-  const badge = document.createElement("div");
-  badge.className = "status " + (
-   isUsing ? "using" : m.want ? "want" : ""
-  );
-  badge.textContent = isUsing
-   ? "● 使用中"
-   : m.want ? "● 使いたい！" : "○ 待機中";
-  box.append(badge);
+    const startButton = document.createElement("button");
+    startButton.className = "primary";
+    startButton.textContent = "使用開始";
+    startButton.disabled = !ready || busy || user.using ||
+      !!data.activeUser;
+    startButton.addEventListener("click", () => {
+      startUsing(name);
+    });
+    card.appendChild(startButton);
 
-  const desc = document.createElement("div");
-  desc.className = "muted";
-  desc.textContent = isUsing
-   ? "現在ログインしています。"
-   : m.want
-    ? "利用希望を出しています。"
-    : "まだ利用希望は出していません。";
-  box.append(desc);
+    const endButton = document.createElement("button");
+    endButton.className = "danger";
+    endButton.textContent = "使用終了";
+    endButton.disabled = !ready || busy ||
+      !user.using || data.activeUser !== name;
+    endButton.addEventListener("click", () => {
+      endUsing(name);
+    });
+    card.appendChild(endButton);
 
-  const want = document.createElement("button");
-  want.className = m.want ? "danger" : "";
-  want.textContent = m.want
-   ? "使いたい！を取り消す"
-   : "使いたい！";
-  want.disabled = isUsing;
+    if (user.using && user.startedAt) {
+      const since = document.createElement("div");
+      since.className = "small";
+      since.style.marginTop = "10px";
+      since.textContent = "開始：" + showTime(user.startedAt);
+      card.appendChild(since);
+    }
 
-  want.onclick = () => mutate(s => {
-   s.members[n].want = !s.members[n].want;
-   log(`${n} さんが「${
-    s.members[n].want ? "使いたい！" : "利用希望を取り消し"
-   }」にしました。`);
+    membersEl.appendChild(card);
+  }
+
+  activityEl.innerHTML = "";
+  const history = Array.isArray(data.activity)
+    ? data.activity.slice(0, 20)
+    : [];
+
+  if (history.length === 0) {
+    const li = document.createElement("li");
+    li.className = "empty";
+    li.textContent = "まだ履歴はありません";
+    activityEl.appendChild(li);
+  } else {
+    for (const item of history) {
+      const li = document.createElement("li");
+      li.textContent =
+        showTime(item.time) + "　" +
+        safeText(item.name) + "： " + safeText(item.message);
+      activityEl.appendChild(li);
+    }
+  }
+}
+
+async function addActivity(name, message) {
+  const history = Array.isArray(data.activity)
+    ? [...data.activity]
+    : [];
+
+  history.unshift({
+    name,
+    message,
+    time: Date.now()
   });
 
-  box.append(want);
-
-  const start = document.createElement("button");
-  start.className = "secondary";
-  start.textContent = "使用開始";
-  start.disabled = !!current && !isUsing;
-
-  start.onclick = () => {
-   if(current && !isUsing) return;
-
-   mutate(s => {
-    s.current = n;
-    s.members[n].want = false;
-    log(`${n} さんが使用を開始しました。`);
-   });
-  };
-
-  box.append(start);
-  $("members").append(box);
- }
-
- $("activity").innerHTML = "";
-
- if(!state.activity?.length){
-  $("activity").innerHTML =
-   '<li class="muted">まだ更新はありません。</li>';
- }else{
-  for(const a of state.activity){
-   const li = document.createElement("li");
-   li.textContent = `${a.time}　${a.msg}`;
-   $("activity").append(li);
-  }
- }
+  await update(statusRef, {
+    activity: history.slice(0, 20)
+  });
 }
 
-async function mutate(fn){
- if(writing) return;
-
- writing = true;
-
- try{
-  const next = structuredClone(state);
-  fn(next);
-  state = next;
-  saveLocal();
+async function changeUser(name, changes, message) {
+  if (!ready || busy) return;
+  busy = true;
   render();
 
-  if(db && remoteRef){
-   await set(remoteRef,state);
+  try {
+    const snapshot = await get(statusRef);
+    const current = snapshot.val() || {};
+    const users = current.users || {};
+    const user = users[name] || {};
+
+    await update(ref(db, "sharedGameAccount/status/users/" + name), changes);
+    await addActivity(name, message);
+  } catch (error) {
+    alert("更新できませんでした。通信状況を確認してください。");
+    console.error(error);
+  } finally {
+    busy = false;
+    render();
   }
- }catch(e){
-  $("configStatus").textContent =
-   "保存できませんでした: " + e.message;
- }finally{
-  writing = false;
- }
 }
 
-$("logoutCurrent").onclick = () => mutate(s => {
- if(s.current){
-  log(`${s.current} さんが使用を終了しました。`);
-  s.current = null;
- }
+async function startUsing(name) {
+  if (!ready || busy) return;
+  busy = true;
+  render();
+
+  try {
+    const snapshot = await get(statusRef);
+    const current = snapshot.val() || {};
+    const users = current.users || {};
+    const activeUser = current.activeUser || null;
+
+    if (activeUser) {
+      alert("現在 " + activeUser + " が使用中です。");
+      return;
+    }
+
+    await update(statusRef, {
+      activeUser: name,
+      ["users/" + name + "/using"]: true,
+      ["users/" + name + "/request"]: false,
+      ["users/" + name + "/startedAt"]: Date.now()
+    });
+
+    await addActivity(name, "使用を開始しました");
+  } catch (error) {
+    alert("使用開始に失敗しました。もう一度試してください。");
+    console.error(error);
+  } finally {
+    busy = false;
+    render();
+  }
+}
+
+async function endUsing(name) {
+  if (!ready || busy) return;
+  busy = true;
+  render();
+
+  try {
+    const snapshot = await get(statusRef);
+    const current = snapshot.val() || {};
+
+    if (current.activeUser !== name) {
+      alert("使用状況が更新されています。画面を確認してください。");
+      return;
+    }
+
+    await update(statusRef, {
+      activeUser: null,
+      ["users/" + name + "/using"]: false,
+      ["users/" + name + "/startedAt"]: null
+    });
+
+    await addActivity(name, "使用を終了しました");
+  } catch (error) {
+    alert("使用終了に失敗しました。もう一度試してください。");
+    console.error(error);
+  } finally {
+    busy = false;
+    render();
+  }
+}
+
+myNameEl.addEventListener("change", () => {
+  localStorage.setItem("sharedAccountMyName", myNameEl.value);
 });
 
-$("clearActivity").onclick = () => mutate(s => {
- s.activity = [];
+document.getElementById("clearHistory").addEventListener("click", async () => {
+  if (!ready || busy) return;
+  if (!confirm("全員の履歴を削除しますか？")) return;
+
+  busy = true;
+  render();
+
+  try {
+    await update(statusRef, { activity: [] });
+  } catch (error) {
+    alert("履歴を削除できませんでした。");
+    console.error(error);
+  } finally {
+    busy = false;
+    render();
+  }
 });
 
-async function connect(cfg){
- const generation = ++connectionGeneration;
+const savedName = localStorage.getItem("sharedAccountMyName");
+if (names.includes(savedName)) {
+  myNameEl.value = savedName;
+}
 
- if(stopListener){
-  stopListener();
-  stopListener = null;
- }
+async function startApp() {
+  try {
+    await signInAnonymously(auth);
 
- db = null;
- auth = null;
- remoteRef = null;
+    // 初回のみ初期データを作成
+    const snapshot = await get(statusRef);
+    if (!snapshot.exists()) {
+      await set(statusRef, {
+        activeUser: null,
+        users: {
+          "なーな": { request: false, using: false, startedAt: null },
+          "らび": { request: false, using: false, startedAt: null },
+          "みかてぃ": { request: false, using: false, startedAt: null }
+        },
+        activity: []
+      });
+    }
 
- $("connectionText").textContent = "匿名ログイン中...";
- $("configStatus").textContent = "";
-
- try{
-  // 同じFirebaseアプリを再利用する
-  const appName = "shared-account";
-  const app = getApps().some(a => a.name === appName)
-   ? getApp(appName)
-   : initializeApp(cfg,appName);
-
-  auth = getAuth(app);
-
-  // メールアドレスやパスワードは不要
-  await signInAnonymously(auth);
-
-  // 接続処理中に解除・再接続されていたら中断
-  if(generation !== connectionGeneration) return;
-
-  db = getDatabase(app);
-  remoteRef = ref(db,"sharedGameAccount/status");
-
-  $("connectionText").textContent = "データを読み込み中...";
-
-  stopListener = onValue(
-   remoteRef,
-   async snap => {
-    if(generation !== connectionGeneration) return;
-
-    try{
-     const val = snap.val();
-
-     if(val){
-      state = {
-       ...structuredClone(defaultState),
-       ...val,
-       members:{
-        ...structuredClone(defaultState.members),
-        ...(val.members || {})
-       },
-       activity:Array.isArray(val.activity) ? val.activity : []
+    onValue(statusRef, (snapshot) => {
+      const value = snapshot.val() || {};
+      data = {
+        activeUser: value.activeUser || null,
+        users: value.users || {},
+        activity: Array.isArray(value.activity)
+          ? value.activity
+          : []
       };
 
-      saveLocal();
+      for (const name of names) {
+        if (!data.users[name]) {
+          data.users[name] = {
+            request: false,
+            using: false,
+            startedAt: null
+          };
+        }
+      }
+
+      ready = true;
+      connectionEl.textContent = "🟢 接続済み・共有中";
       render();
-     }else{
-      await set(remoteRef,state);
-     }
-
-     if(generation !== connectionGeneration) return;
-
-     $("connectionText").textContent =
-      "🟢 3人で共有中（リアルタイム同期）";
-
-     $("setupInfo").textContent =
-      "共有接続中です。3人全員が同じFirebase設定を使うと、変更が各スマホに反映されます。";
-
-     $("configStatus").textContent =
-      "接続しました。ほかの2人にも同じサイトを共有してください。";
-    }catch(e){
-     $("configStatus").textContent =
-      "データの読み込みに失敗しました: " + e.message;
-    }
-   },
-   err => {
-    if(generation !== connectionGeneration) return;
-
-    $("connectionText").textContent = "共有接続エラー";
-    $("configStatus").textContent =
-     "データベース接続エラー: " + err.message;
-   }
-  );
-
- }catch(e){
-  if(generation !== connectionGeneration) return;
-
-  db = null;
-  remoteRef = null;
-
-  $("connectionText").textContent = "共有接続に失敗しました";
-  $("configStatus").textContent =
-   "接続エラー: " + e.message;
-
-  $("setupInfo").textContent =
-   "接続できませんでした。Firebaseの設定と匿名ログインの有効化を確認してください。";
- }
-}
-
-$("saveConfig").onclick = async () => {
- try{
-  const cfg = JSON.parse($("firebaseConfig").value);
-
-  if(!cfg.databaseURL || !cfg.apiKey || !cfg.projectId){
-   throw Error("databaseURL・apiKey・projectIdを確認してください");
+    }, (error) => {
+      connectionEl.textContent = "🔴 データの読み込みに失敗しました";
+      console.error(error);
+    });
+  } catch (error) {
+    connectionEl.textContent =
+      "🔴 接続失敗：Firebaseの設定・認証・ルールを確認してください";
+    console.error(error);
   }
-
-  localStorage.setItem(
-   "sharedGameAccountFirebaseConfig",
-   JSON.stringify(cfg)
-  );
-
-  await connect(cfg);
- }catch(e){
-  $("configStatus").textContent =
-   "設定を確認してください: " + e.message;
- }
-};
-
-$("disconnect").onclick = () => {
- connectionGeneration++;
-
- if(stopListener){
-  stopListener();
-  stopListener = null;
- }
-
- db = null;
- auth = null;
- remoteRef = null;
-
- $("connectionText").textContent =
-  "この端末内で動作中（共有設定は未接続）";
-
- $("setupInfo").textContent = "共有接続は解除されています。";
- $("configStatus").textContent = "接続を解除しました。";
-};
-
-$("firebaseConfig").value =
- localStorage.getItem("sharedGameAccountFirebaseConfig") || "";
+}
 
 render();
-
-// 保存済みのFirebase設定があれば自動接続
-try{
- const cfg = JSON.parse($("firebaseConfig").value || "null");
-
- if(cfg?.databaseURL){
-  connect(cfg);
- }else{
-  $("connectionText").textContent =
-   "Firebase設定を入力すると共有できます";
- }
-}catch{
- $("connectionText").textContent =
-  "Firebase設定を入力すると共有できます";
-}
+startApp();
 </script>
 </body>
 </html>
-```
