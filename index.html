@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="ja">
 <head>
@@ -7,106 +8,454 @@
 <title>共有アカウント管理</title>
 <style>
 :root{--ink:#262744;--muted:#777b9b;--purple:#7069b7;--line:#e5e6f5;--bg:#f7f7fc}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{background:linear-gradient(120deg,#7771c0,#918bcf);color:white;padding:22px 18px}
-.wrap{max-width:900px;margin:auto}.brand{font-size:22px;font-weight:800}.sub{font-size:13px;opacity:.9;margin-top:5px}
-main{padding:18px 14px 32px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #38356c0a}
-h2{font-size:17px;margin:0 0 14px}.current{background:#eeefff;border-color:#dfe0ff;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.current strong{font-size:21px}.muted{color:var(--muted);font-size:13px;line-height:1.6}.members{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.wrap{max-width:900px;margin:auto}
+.brand{font-size:22px;font-weight:800}
+.sub{font-size:13px;opacity:.9;margin-top:5px}
+main{padding:18px 14px 32px}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #38356c0a}
+h2{font-size:17px;margin:0 0 14px}
+.current{background:#eeefff;border-color:#dfe0ff;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.current strong{font-size:21px}
+.muted{color:var(--muted);font-size:13px;line-height:1.6}
+.members{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .member{border-radius:16px;padding:15px 12px;border:1px solid var(--line);background:white;min-width:0}
-.member h3{margin:0 0 9px;font-size:18px}.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:750;margin-bottom:12px;background:#f0f1f8;color:#676b8a}
-.status.using{background:#ddf7ed;color:#138564}.status.want{background:#ffe5ed;color:#c63761}
+.member h3{margin:0 0 9px;font-size:18px}
+.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:750;margin-bottom:12px;background:#f0f1f8;color:#676b8a}
+.status.using{background:#ddf7ed;color:#138564}
+.status.want{background:#ffe5ed;color:#c63761}
 button{width:100%;border:0;border-radius:11px;padding:12px 9px;font-size:14px;font-weight:750;cursor:pointer;margin-top:8px;background:#716bb9;color:white}
-button.secondary{background:#eef0fa;color:#51557b}button.danger{background:#f04f79;color:white}button:disabled{opacity:.4;cursor:not-allowed}
+button.secondary{background:#eef0fa;color:#51557b}
+button.danger{background:#f04f79;color:white}
+button:disabled{opacity:.4;cursor:not-allowed}
 .notice{background:#f0f1ff;border-color:#e0e2ff;font-size:13px;line-height:1.8;color:#64678d}
-.activity{list-style:none;padding:0;margin:0}.activity li{padding:11px 0;border-bottom:1px solid #f0f0f8;font-size:13px;line-height:1.5}.activity li:last-child{border:0}
-.setup{font-size:13px;line-height:1.8;color:#6e7292}.setup code{background:#f0f1f8;padding:2px 5px;border-radius:5px}
+.activity{list-style:none;padding:0;margin:0}
+.activity li{padding:11px 0;border-bottom:1px solid #f0f0f8;font-size:13px;line-height:1.5}
+.activity li:last-child{border:0}
+.setup{font-size:13px;line-height:1.8;color:#6e7292}
+.setup code{background:#f0f1f8;padding:2px 5px;border-radius:5px}
 footer{text-align:center;color:#989bb4;font-size:12px;padding:4px 16px 28px}
-@media(max-width:620px){.members{grid-template-columns:1fr}.member{padding:15px}.member h3{display:inline-block;margin-right:8px}.member button{max-width:none}.current strong{font-size:18px}}
+@media(max-width:620px){
+ .members{grid-template-columns:1fr}
+ .member{padding:15px}
+ .member h3{display:inline-block;margin-right:8px}
+ .member button{max-width:none}
+ .current strong{font-size:18px}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap"><div class="brand">🎮 共有アカウント管理</div><div class="sub">なーな・らび・みかてぃで、順番を見える化</div></div></header>
+<header>
+ <div class="wrap">
+  <div class="brand">🎮 共有アカウント管理</div>
+  <div class="sub">なーな・らび・みかてぃで、順番を見える化</div>
+ </div>
+</header>
+
 <main class="wrap">
-  <section class="card current">
-    <div><div class="muted">現在の利用状況</div><strong id="currentText">現在、使用中の人はいません</strong><div class="muted" id="connectionText">この端末内で動作中（共有設定は未接続）</div></div>
-    <div style="min-width:140px"><button id="logoutCurrent" class="secondary">使用終了</button></div>
-  </section>
-  <section class="card">
-    <h2>👥 メンバーの状況</h2>
-    <div class="members" id="members"></div>
-  </section>
-  <section class="card">
-    <h2>🕒 最近の更新</h2>
-    <ul class="activity" id="activity"><li class="muted">まだ更新はありません。</li></ul>
-    <button class="secondary" id="clearActivity">履歴を消去</button>
-  </section>
-  <section class="card notice">
-    <b>使い方</b><br>
-    ・「使いたい！」を押すと、自分が利用希望中だと表示されます。<br>
-    ・「使用開始」は、実際にゲームへログインできたときに押してください。<br>
-    ・順番の自動決定はせず、誰が使いたいかを全員で確認して交代してください。
-  </section>
-  <section class="card">
-    <h2>⚙️ 共有設定</h2>
-    <div class="setup" id="setupInfo">今はこのブラウザ内だけに情報が保存されます。3人のスマホで同じ情報を共有するには、Firebase Realtime Database の接続設定が必要です。下の設定欄にFirebaseの設定を入れると、端末間同期を有効にできます。</div>
-    <details style="margin-top:12px"><summary>Firebase接続設定を開く</summary>
-      <p class="setup">FirebaseプロジェクトのWebアプリ設定とRealtime DatabaseのURLを貼り付けてください。設定はこのブラウザに保存されます。</p>
-      <label class="muted" for="firebaseConfig">Firebase Web設定（JSON）</label>
-      <textarea id="firebaseConfig" rows="6" style="width:100%;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:10px;font:12px monospace" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"https://...","projectId":"...","appId":"..."}'></textarea>
-      <button id="saveConfig">設定を保存して接続</button>
-      <button class="secondary" id="disconnect">共有接続を解除</button>
-      <div class="muted" id="configStatus" aria-live="polite"></div>
-    </details>
-  </section>
+ <section class="card current">
+  <div>
+   <div class="muted">現在の利用状況</div>
+   <strong id="currentText">現在、使用中の人はいません</strong>
+   <div class="muted" id="connectionText">接続準備中...</div>
+  </div>
+  <div style="min-width:140px">
+   <button id="logoutCurrent" class="secondary">使用終了</button>
+  </div>
+ </section>
+
+ <section class="card">
+  <h2>👥 メンバーの状況</h2>
+  <div class="members" id="members"></div>
+ </section>
+
+ <section class="card">
+  <h2>🕒 最近の更新</h2>
+  <ul class="activity" id="activity">
+   <li class="muted">まだ更新はありません。</li>
+  </ul>
+  <button class="secondary" id="clearActivity">履歴を消去</button>
+ </section>
+
+ <section class="card notice">
+  <b>使い方</b><br>
+  ・「使いたい！」を押すと、自分が利用希望中だと表示されます。<br>
+  ・「使用開始」は、実際にゲームへログインできたときに押してください。<br>
+  ・順番の自動決定はせず、誰が使いたいかを全員で確認して交代してください。
+ </section>
+
+ <section class="card">
+  <h2>⚙️ 共有設定</h2>
+  <div class="setup" id="setupInfo">
+   Firebaseに接続すると、3人の端末で情報を共有できます。
+  </div>
+  <details style="margin-top:12px">
+   <summary>Firebase接続設定を開く</summary>
+   <p class="setup">FirebaseプロジェクトのWebアプリ設定を貼り付けてください。設定はこのブラウザに保存されます。</p>
+   <label class="muted" for="firebaseConfig">Firebase Web設定（JSON）</label>
+   <textarea id="firebaseConfig" rows="6" style="width:100%;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:10px;font:12px monospace" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"https://...","projectId":"...","appId":"..."}'></textarea>
+   <button id="saveConfig">設定を保存して接続</button>
+   <button class="secondary" id="disconnect">共有接続を解除</button>
+   <div class="muted" id="configStatus" aria-live="polite"></div>
+  </details>
+ </section>
 </main>
+
 <footer>共有アカウント管理ツール · なーな / らび / みかてぃ</footer>
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-const names=["なーな","らび","みかてぃ"];
-const defaultState={current:null,members:Object.fromEntries(names.map(n=>[n,{want:false}])),activity:[]};
-let state=loadLocal(), db=null, stopListener=null, remoteRef=null, writing=false;
-const $=id=>document.getElementById(id);
-function loadLocal(){try{return {...structuredClone(defaultState),...JSON.parse(localStorage.getItem("sharedGameAccountState")||"{}")}}catch{return structuredClone(defaultState)}}
-function saveLocal(){localStorage.setItem("sharedGameAccountState",JSON.stringify(state))}
-function log(msg){state.activity.unshift({time:new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}),msg});state.activity=state.activity.slice(0,8)}
+import {
+ initializeApp,
+ getApps,
+ getApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+ getDatabase,
+ ref,
+ onValue,
+ set
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+import {
+ getAuth,
+ signInAnonymously
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const names = ["なーな","らび","みかてぃ"];
+
+const defaultState = {
+ current: null,
+ members: Object.fromEntries(names.map(n => [n,{want:false}])),
+ activity: []
+};
+
+const $ = id => document.getElementById(id);
+
+let state = loadLocal();
+let db = null;
+let auth = null;
+let stopListener = null;
+let remoteRef = null;
+let writing = false;
+let connectionGeneration = 0;
+
+function loadLocal(){
+ try{
+  const saved = JSON.parse(
+   localStorage.getItem("sharedGameAccountState") || "{}"
+  );
+  return {
+   ...structuredClone(defaultState),
+   ...saved,
+   members:{
+    ...structuredClone(defaultState.members),
+    ...(saved.members || {})
+   },
+   activity:Array.isArray(saved.activity) ? saved.activity : []
+  };
+ }catch{
+  return structuredClone(defaultState);
+ }
+}
+
+function saveLocal(){
+ localStorage.setItem("sharedGameAccountState",JSON.stringify(state));
+}
+
+function log(msg){
+ state.activity.unshift({
+  time:new Date().toLocaleTimeString("ja-JP",{
+   hour:"2-digit",
+   minute:"2-digit"
+  }),
+  msg
+ });
+ state.activity = state.activity.slice(0,8);
+}
+
 function render(){
- const current=state.current;
- $("currentText").textContent=current?`${current} が使用中です`:"現在、使用中の人はいません";
- $("logoutCurrent").disabled=!current;
- $("members").innerHTML="";
+ const current = state.current;
+
+ $("currentText").textContent = current
+  ? `${current} が使用中です`
+  : "現在、使用中の人はいません";
+
+ $("logoutCurrent").disabled = !current;
+ $("members").innerHTML = "";
+
  for(const n of names){
-  const m=state.members?.[n]||{want:false};const isUsing=current===n;
-  const box=document.createElement("article");box.className="member";
-  const h=document.createElement("h3");h.textContent=n;box.append(h);
-  const badge=document.createElement("div");badge.className="status "+(isUsing?"using":m.want?"want":"");badge.textContent=isUsing?"● 使用中":m.want?"● 使いたい！":"○ 待機中";box.append(badge);
-  const desc=document.createElement("div");desc.className="muted";desc.textContent=isUsing?"現在ログインしています。":m.want?"利用希望を出しています。":"まだ利用希望は出していません。";box.append(desc);
-  const want=document.createElement("button");want.className=m.want?"danger":"";
-  want.textContent=m.want?"使いたい！を取り消す":"使いたい！";
-  want.disabled=isUsing;want.onclick=()=>mutate(s=>{s.members[n].want=!s.members[n].want;log(`${n} さんが「${s.members[n].want?"使いたい！":"利用希望を取り消し"}」にしました。`)});box.append(want);
-  const start=document.createElement("button");start.className="secondary";start.textContent="使用開始";start.disabled=!!current&&!isUsing;
-  start.onclick=()=>{if(current&&!isUsing)return;mutate(s=>{s.current=n;s.members[n].want=false;log(`${n} さんが使用を開始しました。`)})};box.append(start);
+  const m = state.members?.[n] || {want:false};
+  const isUsing = current === n;
+
+  const box = document.createElement("article");
+  box.className = "member";
+
+  const h = document.createElement("h3");
+  h.textContent = n;
+  box.append(h);
+
+  const badge = document.createElement("div");
+  badge.className = "status " + (
+   isUsing ? "using" : m.want ? "want" : ""
+  );
+  badge.textContent = isUsing
+   ? "● 使用中"
+   : m.want ? "● 使いたい！" : "○ 待機中";
+  box.append(badge);
+
+  const desc = document.createElement("div");
+  desc.className = "muted";
+  desc.textContent = isUsing
+   ? "現在ログインしています。"
+   : m.want
+    ? "利用希望を出しています。"
+    : "まだ利用希望は出していません。";
+  box.append(desc);
+
+  const want = document.createElement("button");
+  want.className = m.want ? "danger" : "";
+  want.textContent = m.want
+   ? "使いたい！を取り消す"
+   : "使いたい！";
+  want.disabled = isUsing;
+
+  want.onclick = () => mutate(s => {
+   s.members[n].want = !s.members[n].want;
+   log(`${n} さんが「${
+    s.members[n].want ? "使いたい！" : "利用希望を取り消し"
+   }」にしました。`);
+  });
+
+  box.append(want);
+
+  const start = document.createElement("button");
+  start.className = "secondary";
+  start.textContent = "使用開始";
+  start.disabled = !!current && !isUsing;
+
+  start.onclick = () => {
+   if(current && !isUsing) return;
+
+   mutate(s => {
+    s.current = n;
+    s.members[n].want = false;
+    log(`${n} さんが使用を開始しました。`);
+   });
+  };
+
+  box.append(start);
   $("members").append(box);
  }
- $("activity").innerHTML="";
- if(!state.activity?.length){$("activity").innerHTML='<li class="muted">まだ更新はありません。</li>'}
- else for(const a of state.activity){const li=document.createElement("li");li.textContent=`${a.time}　${a.msg}`;$("activity").append(li)}
+
+ $("activity").innerHTML = "";
+
+ if(!state.activity?.length){
+  $("activity").innerHTML =
+   '<li class="muted">まだ更新はありません。</li>';
+ }else{
+  for(const a of state.activity){
+   const li = document.createElement("li");
+   li.textContent = `${a.time}　${a.msg}`;
+   $("activity").append(li);
+  }
+ }
 }
-async function mutate(fn){if(writing)return;writing=true;try{const next=structuredClone(state);fn(next);state=next;saveLocal();render();if(db&&remoteRef)await set(remoteRef,state)}catch(e){$("configStatus").textContent="保存できませんでした: "+e.message}finally{writing=false}}
-$("logoutCurrent").onclick=()=>mutate(s=>{if(s.current){log(`${s.current} さんが使用を終了しました。`);s.current=null}});
-$("clearActivity").onclick=()=>mutate(s=>{s.activity=[]});
+
+async function mutate(fn){
+ if(writing) return;
+
+ writing = true;
+
+ try{
+  const next = structuredClone(state);
+  fn(next);
+  state = next;
+  saveLocal();
+  render();
+
+  if(db && remoteRef){
+   await set(remoteRef,state);
+  }
+ }catch(e){
+  $("configStatus").textContent =
+   "保存できませんでした: " + e.message;
+ }finally{
+  writing = false;
+ }
+}
+
+$("logoutCurrent").onclick = () => mutate(s => {
+ if(s.current){
+  log(`${s.current} さんが使用を終了しました。`);
+  s.current = null;
+ }
+});
+
+$("clearActivity").onclick = () => mutate(s => {
+ s.activity = [];
+});
+
 async function connect(cfg){
- if(stopListener){stopListener();stopListener=null} db=null;remoteRef=null;
- const app=initializeApp(cfg,"shared-account-"+Math.random().toString(36).slice(2));
- db=getDatabase(app);remoteRef=ref(db,"sharedGameAccount/status");
- stopListener=onValue(remoteRef,snap=>{const val=snap.val();if(val){state={...structuredClone(defaultState),...val};saveLocal();render()}else set(remoteRef,state);$("connectionText").textContent="🟢 3人で共有中（リアルタイム同期）";$("setupInfo").textContent="共有接続中です。3人全員が同じFirebase設定を使うと、変更が各スマホに反映されます。";$("configStatus").textContent="接続しました。ほかの2人の端末にも同じ設定をしてください。"},err=>{$("configStatus").textContent="接続エラー: "+err.message});
+ const generation = ++connectionGeneration;
+
+ if(stopListener){
+  stopListener();
+  stopListener = null;
+ }
+
+ db = null;
+ auth = null;
+ remoteRef = null;
+
+ $("connectionText").textContent = "匿名ログイン中...";
+ $("configStatus").textContent = "";
+
+ try{
+  // 同じFirebaseアプリを再利用する
+  const appName = "shared-account";
+  const app = getApps().some(a => a.name === appName)
+   ? getApp(appName)
+   : initializeApp(cfg,appName);
+
+  auth = getAuth(app);
+
+  // メールアドレスやパスワードは不要
+  await signInAnonymously(auth);
+
+  // 接続処理中に解除・再接続されていたら中断
+  if(generation !== connectionGeneration) return;
+
+  db = getDatabase(app);
+  remoteRef = ref(db,"sharedGameAccount/status");
+
+  $("connectionText").textContent = "データを読み込み中...";
+
+  stopListener = onValue(
+   remoteRef,
+   async snap => {
+    if(generation !== connectionGeneration) return;
+
+    try{
+     const val = snap.val();
+
+     if(val){
+      state = {
+       ...structuredClone(defaultState),
+       ...val,
+       members:{
+        ...structuredClone(defaultState.members),
+        ...(val.members || {})
+       },
+       activity:Array.isArray(val.activity) ? val.activity : []
+      };
+
+      saveLocal();
+      render();
+     }else{
+      await set(remoteRef,state);
+     }
+
+     if(generation !== connectionGeneration) return;
+
+     $("connectionText").textContent =
+      "🟢 3人で共有中（リアルタイム同期）";
+
+     $("setupInfo").textContent =
+      "共有接続中です。3人全員が同じFirebase設定を使うと、変更が各スマホに反映されます。";
+
+     $("configStatus").textContent =
+      "接続しました。ほかの2人にも同じサイトを共有してください。";
+    }catch(e){
+     $("configStatus").textContent =
+      "データの読み込みに失敗しました: " + e.message;
+    }
+   },
+   err => {
+    if(generation !== connectionGeneration) return;
+
+    $("connectionText").textContent = "共有接続エラー";
+    $("configStatus").textContent =
+     "データベース接続エラー: " + err.message;
+   }
+  );
+
+ }catch(e){
+  if(generation !== connectionGeneration) return;
+
+  db = null;
+  remoteRef = null;
+
+  $("connectionText").textContent = "共有接続に失敗しました";
+  $("configStatus").textContent =
+   "接続エラー: " + e.message;
+
+  $("setupInfo").textContent =
+   "接続できませんでした。Firebaseの設定と匿名ログインの有効化を確認してください。";
+ }
 }
-$("saveConfig").onclick=async()=>{try{const cfg=JSON.parse($("firebaseConfig").value);if(!cfg.databaseURL||!cfg.apiKey||!cfg.projectId)throw Error("databaseURL・apiKey・projectIdを確認してください");localStorage.setItem("sharedGameAccountFirebaseConfig",JSON.stringify(cfg));await connect(cfg)}catch(e){$("configStatus").textContent="設定を確認してください: "+e.message}};
-$("disconnect").onclick=()=>{if(stopListener)stopListener();stopListener=null;db=null;remoteRef=null;$("connectionText").textContent="この端末内で動作中（共有設定は未接続）";$("setupInfo").textContent="共有接続は解除されています。";$("configStatus").textContent="接続を解除しました。"};
-$("firebaseConfig").value=localStorage.getItem("sharedGameAccountFirebaseConfig")||"";
+
+$("saveConfig").onclick = async () => {
+ try{
+  const cfg = JSON.parse($("firebaseConfig").value);
+
+  if(!cfg.databaseURL || !cfg.apiKey || !cfg.projectId){
+   throw Error("databaseURL・apiKey・projectIdを確認してください");
+  }
+
+  localStorage.setItem(
+   "sharedGameAccountFirebaseConfig",
+   JSON.stringify(cfg)
+  );
+
+  await connect(cfg);
+ }catch(e){
+  $("configStatus").textContent =
+   "設定を確認してください: " + e.message;
+ }
+};
+
+$("disconnect").onclick = () => {
+ connectionGeneration++;
+
+ if(stopListener){
+  stopListener();
+  stopListener = null;
+ }
+
+ db = null;
+ auth = null;
+ remoteRef = null;
+
+ $("connectionText").textContent =
+  "この端末内で動作中（共有設定は未接続）";
+
+ $("setupInfo").textContent = "共有接続は解除されています。";
+ $("configStatus").textContent = "接続を解除しました。";
+};
+
+$("firebaseConfig").value =
+ localStorage.getItem("sharedGameAccountFirebaseConfig") || "";
+
 render();
-try{const cfg=JSON.parse($("firebaseConfig").value||"null");if(cfg?.databaseURL)connect(cfg)}catch{}
+
+// 保存済みのFirebase設定があれば自動接続
+try{
+ const cfg = JSON.parse($("firebaseConfig").value || "null");
+
+ if(cfg?.databaseURL){
+  connect(cfg);
+ }else{
+  $("connectionText").textContent =
+   "Firebase設定を入力すると共有できます";
+ }
+}catch{
+ $("connectionText").textContent =
+  "Firebase設定を入力すると共有できます";
+}
 </script>
 </body>
 </html>
+```
