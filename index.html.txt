@@ -1,0 +1,480 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>共有ログイン管理</title>
+<style>
+:root {
+  font-family: system-ui, sans-serif;
+  color: #252638;
+  background: #f4f5fb;
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 20px 14px 40px; }
+main { max-width: 760px; margin: auto; }
+h1 { font-size: 25px; margin-bottom: 6px; }
+.sub { color: #73768a; font-size: 14px; }
+.panel {
+  background: white;
+  border: 1px solid #e5e7f0;
+  border-radius: 16px;
+  padding: 18px;
+  margin-top: 16px;
+  box-shadow: 0 4px 18px #24264a08;
+}
+label { display: block; font-size: 14px; margin-bottom: 8px; }
+select, button {
+  font: inherit;
+  border-radius: 10px;
+  padding: 11px 13px;
+}
+select {
+  width: 100%;
+  border: 1px solid #d9dbea;
+  background: white;
+}
+.members {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(190px,1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.member {
+  background: white;
+  border: 1px solid #e5e7f0;
+  border-radius: 15px;
+  padding: 16px;
+  min-width: 0;
+}
+.member.mine {
+  border: 2px solid #6865e8;
+  background: #fbfaff;
+}
+.member h2 { font-size: 19px; margin: 0 0 10px; }
+.status {
+  font-size: 14px;
+  font-weight: 650;
+  margin: 12px 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f3f4f8;
+}
+.status.using { background: #e4f8eb; color: #16753a; }
+.status.request { background: #fff4d9; color: #8a5a00; }
+.status.idle { background: #f0f1f5; color: #666a7b; }
+button {
+  border: 0;
+  cursor: pointer;
+  font-weight: 650;
+  width: 100%;
+  margin-top: 8px;
+  background: #ededf5;
+  color: #34364d;
+}
+button.primary { background: #5655dc; color: white; }
+button.danger { background: #fff0f0; color: #b33143; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.small { font-size: 12px; color: #777b8d; }
+#connection { font-size: 13px; margin-top: 10px; }
+#activity { padding-left: 20px; }
+#activity li { margin: 8px 0; font-size: 13px; overflow-wrap: anywhere; }
+.empty { color: #85889a; font-size: 14px; }
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: #e8e7ff;
+  color: #4e49c8;
+  margin-left: 5px;
+}
+.notice { font-size: 13px; color: #666a7b; line-height: 1.8; }
+footer { margin-top: 24px; text-align: center; color: #898b9b; font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>共有ログイン管理</h1>
+  <div class="sub">みんなの使用状況をリアルタイムで共有</div>
+
+  <section class="panel">
+    <label for="myName">自分の名前を選択</label>
+    <select id="myName">
+      <option value="なーな">なーな</option>
+      <option value="らび">らび</option>
+      <option value="みかてぃ">みかてぃ</option>
+    </select>
+    <div id="connection">Firebaseに接続しています…</div>
+  </section>
+
+  <div class="members" id="members"></div>
+
+  <section class="panel">
+    <h2>最近の履歴</h2>
+    <ol id="activity">
+      <li class="empty">履歴を読み込み中…</li>
+    </ol>
+    <button id="clearHistory" class="danger">履歴を全消去</button>
+  </section>
+
+  <section class="panel">
+    <h2>使い方</h2>
+    <div class="notice">
+      ・最初に自分の名前を選択してください。<br>
+      ・自分のカードから「使いたい！」を押すと使用希望を共有できます。<br>
+      ・使用を始めるときは「使用開始」を押してください。<br>
+      ・使い終わったら「使用終了」を押してください。<br>
+      ・他の人のカードには状況だけが表示されます。
+    </div>
+  </section>
+
+  <footer>共有ログイン管理</footer>
+</main>
+
+<script type="module">
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase, ref, onValue, update, get, runTransaction
+} from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  getAuth, signInAnonymously
+} from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// Firebase設定
+const firebaseConfig = {
+  apiKey: "AIzaSyAVqgTP7iGm703wuDmL66E8PUvHVdd3Gxc",
+  authDomain: "kyouyuu-account.firebaseapp.com",
+  databaseURL: "https://kyouyuu-account-default-rtdb.firebaseio.com",
+  projectId: "kyouyuu-account",
+  storageBucket: "kyouyuu-account.firebasestorage.app",
+  messagingSenderId: "946109825848",
+  appId: "1:946109825848:web:e330913a022502beb1f7cd",
+  measurementId: "G-QY99E3QLYX"
+};
+
+const names = ["なーな", "らび", "みかてぃ"];
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const statusRef = ref(db, "sharedGameAccount/status");
+
+const connectionEl = document.getElementById("connection");
+const myNameEl = document.getElementById("myName");
+const membersEl = document.getElementById("members");
+const activityEl = document.getElementById("activity");
+
+let data = {
+  activeUser: null,
+  users: {},
+  activity: []
+};
+let ready = false;
+let busy = false;
+
+const savedName = localStorage.getItem("sharedAccountMyName");
+if (names.includes(savedName)) myNameEl.value = savedName;
+
+function showTime(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleString("ja-JP", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function addButton(card, label, className, disabled, action) {
+  const button = document.createElement("button");
+  button.textContent = label;
+  if (className) button.className = className;
+  button.disabled = disabled;
+  button.addEventListener("click", action);
+  card.appendChild(button);
+}
+
+function render() {
+  const myName = myNameEl.value;
+  membersEl.innerHTML = "";
+
+  for (const name of names) {
+    const user = data.users[name] || {};
+    const isMe = name === myName;
+    const isUsing = data.activeUser === name || user.using === true;
+
+    const card = document.createElement("article");
+    card.className = "member" + (isMe ? " mine" : "");
+
+    const heading = document.createElement("h2");
+    heading.textContent = name;
+    if (isMe) {
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = "自分";
+      heading.appendChild(badge);
+    }
+    card.appendChild(heading);
+
+    const status = document.createElement("div");
+    status.className = "status";
+
+    if (isUsing) {
+      status.classList.add("using");
+      status.textContent = "🟢 使用中";
+    } else if (user.request) {
+      status.classList.add("request");
+      status.textContent = "🟡 使用希望あり";
+    } else {
+      status.classList.add("idle");
+      status.textContent = "⚪ 使用していません";
+    }
+    card.appendChild(status);
+
+    if (isUsing && user.startedAt) {
+      const since = document.createElement("div");
+      since.className = "small";
+      since.textContent = "開始時刻：" + showTime(user.startedAt);
+      card.appendChild(since);
+    }
+
+    if (!isMe) {
+      const note = document.createElement("p");
+      note.className = "small";
+      note.textContent = isUsing
+        ? "この人が現在使用しています"
+        : user.request
+          ? "使用希望を出しています"
+          : "現在は空いています";
+      card.appendChild(note);
+      membersEl.appendChild(card);
+      continue;
+    }
+
+    addButton(
+      card,
+      user.request ? "使用希望を取り消す" : "使いたい！",
+      "",
+      !ready || busy || isUsing,
+      () => changeRequest(!user.request)
+    );
+
+    addButton(
+      card,
+      "使用開始",
+      "primary",
+      !ready || busy || !!data.activeUser,
+      () => startUsing()
+    );
+
+    addButton(
+      card,
+      "使用終了",
+      "danger",
+      !ready || busy || data.activeUser !== myName,
+      () => endUsing()
+    );
+
+    membersEl.appendChild(card);
+  }
+
+  activityEl.innerHTML = "";
+  const history = Array.isArray(data.activity)
+    ? data.activity.slice(0, 20)
+    : [];
+
+  if (history.length === 0) {
+    const li = document.createElement("li");
+    li.className = "empty";
+    li.textContent = "まだ履歴はありません";
+    activityEl.appendChild(li);
+  } else {
+    for (const item of history) {
+      const li = document.createElement("li");
+      li.textContent =
+        showTime(item.time) + "　" +
+        String(item.name || "") + "： " +
+        String(item.message || "");
+      activityEl.appendChild(li);
+    }
+  }
+}
+
+async function addActivity(name, message) {
+  const snapshot = await get(ref(db, "sharedGameAccount/status/activity"));
+  const oldHistory = snapshot.val();
+  const history = Array.isArray(oldHistory) ? oldHistory : [];
+
+  history.unshift({
+    name,
+    message,
+    time: Date.now()
+  });
+
+  await update(statusRef, { activity: history.slice(0, 20) });
+}
+
+async function changeRequest(request) {
+  if (!ready || busy) return;
+  busy = true;
+  render();
+  const name = myNameEl.value;
+
+  try {
+    await update(ref(db, "sharedGameAccount/status/users/" + name), {
+      request
+    });
+    await addActivity(name, request ? "使用を希望しました" : "使用希望を取り消しました");
+  } catch (error) {
+    console.error(error);
+    alert("更新できませんでした。Firebaseの接続やルールを確認してください。");
+  } finally {
+    busy = false;
+    render();
+  }
+}
+
+async function startUsing() {
+  if (!ready || busy) return;
+  busy = true;
+  render();
+  const name = myNameEl.value;
+
+  try {
+    const result = await runTransaction(statusRef, current => {
+      if (!current) return;
+      if (current.activeUser) return;
+      current.activeUser = name;
+      current.users = current.users || {};
+      current.users[name] = current.users[name] || {};
+      current.users[name].using = true;
+      current.users[name].request = false;
+      current.users[name].startedAt = Date.now();
+      return current;
+    });
+
+    if (!result.committed) {
+      alert("ほかの人が使用中です。状況を確認してください。");
+      return;
+    }
+    await addActivity(name, "使用を開始しました");
+  } catch (error) {
+    console.error(error);
+    alert("使用開始に失敗しました。");
+  } finally {
+    busy = false;
+    render();
+  }
+}
+
+async function endUsing() {
+  if (!ready || busy) return;
+  busy = true;
+  render();
+  const name = myNameEl.value;
+
+  try {
+    const result = await runTransaction(statusRef, current => {
+      if (!current || current.activeUser !== name) return;
+      current.activeUser = null;
+      current.users = current.users || {};
+      current.users[name] = current.users[name] || {};
+      current.users[name].using = false;
+      current.users[name].startedAt = null;
+      return current;
+    });
+
+    if (!result.committed) {
+      alert("自分が使用中の場合だけ終了できます。");
+      return;
+    }
+    await addActivity(name, "使用を終了しました");
+  } catch (error) {
+    console.error(error);
+    alert("使用終了に失敗しました。");
+  } finally {
+    busy = false;
+    render();
+  }
+}
+
+myNameEl.addEventListener("change", () => {
+  localStorage.setItem("sharedAccountMyName", myNameEl.value);
+  render();
+});
+
+document.getElementById("clearHistory").addEventListener("click", async () => {
+  if (!ready || busy) return;
+  if (!confirm("全員の履歴を削除しますか？")) return;
+
+  busy = true;
+  render();
+  try {
+    await update(statusRef, { activity: [] });
+  } catch (error) {
+    console.error(error);
+    alert("履歴を削除できませんでした。");
+  } finally {
+    busy = false;
+    render();
+  }
+});
+
+async function startApp() {
+  try {
+    await signInAnonymously(auth);
+
+    const snapshot = await get(statusRef);
+    if (!snapshot.exists()) {
+      await update(statusRef, {
+        activeUser: null,
+        users: {
+          "なーな": { request: false, using: false, startedAt: null },
+          "らび": { request: false, using: false, startedAt: null },
+          "みかてぃ": { request: false, using: false, startedAt: null }
+        },
+        activity: []
+      });
+    }
+
+    onValue(statusRef, snapshot => {
+      const value = snapshot.val() || {};
+      data = {
+        activeUser: value.activeUser || null,
+        users: value.users || {},
+        activity: Array.isArray(value.activity) ? value.activity : []
+      };
+
+      for (const name of names) {
+        if (!data.users[name]) {
+          data.users[name] = {
+            request: false,
+            using: false,
+            startedAt: null
+          };
+        }
+      }
+
+      ready = true;
+      connectionEl.textContent = "🟢 接続済み・共有中";
+      render();
+    }, error => {
+      console.error(error);
+      connectionEl.textContent = "🔴 データの読み込みに失敗しました";
+    });
+  } catch (error) {
+    console.error(error);
+    connectionEl.textContent =
+      "🔴 接続失敗：APIキー・認証設定・データベースルールを確認してください";
+  }
+}
+
+render();
+startApp();
+</script>
+</body>
+</html>
