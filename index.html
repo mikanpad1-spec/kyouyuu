@@ -91,6 +91,12 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   margin-left: 5px;
 }
 .notice { font-size: 13px; color: #666a7b; line-height: 1.8; }
+#activityPanel { display: block; }
+#helpPanel { display: none; }
+.current-status { font-size: 18px; font-weight: 700; padding: 16px; border-radius: 12px; margin-top: 12px; background: #f0f1f5; }
+.current-status.using { background: #e4f8eb; color: #16753a; }
+.current-status.idle { background: #f0f1f5; color: #666a7b; }
+.own-controls { margin-top: 14px; }
 footer { margin-top: 24px; text-align: center; color: #898b9b; font-size: 12px; }
 </style>
 </head>
@@ -105,13 +111,14 @@ footer { margin-top: 24px; text-align: center; color: #898b9b; font-size: 12px; 
       <option value="なーな">なーな</option>
       <option value="らび">らび</option>
       <option value="みかてぃ">みかてぃ</option>
+      <option value="ししゃも">ししゃも</option>
     </select>
     <div id="connection">Firebaseに接続しています…</div>
   </section>
 
   <div class="members" id="members"></div>
 
-  <section class="panel">
+  <section class="panel" id="activityPanel">
     <h2>最近の履歴</h2>
     <ol id="activity">
       <li class="empty">履歴を読み込み中…</li>
@@ -119,14 +126,14 @@ footer { margin-top: 24px; text-align: center; color: #898b9b; font-size: 12px; 
     <button id="clearHistory" class="danger">履歴を全消去</button>
   </section>
 
-  <section class="panel">
+  <section class="panel" id="helpPanel">
     <h2>使い方</h2>
     <div class="notice">
       ・最初に自分の名前を選択してください。<br>
       ・自分のカードから「使いたい！」を押すと使用希望を共有できます。<br>
       ・使用を始めるときは「使用開始」を押してください。<br>
       ・使い終わったら「使用終了」を押してください。<br>
-      ・他の人のカードには状況だけが表示されます。
+      ・画面には現在使用中の人と、自分の操作だけが表示されます。
     </div>
   </section>
 
@@ -157,7 +164,7 @@ const firebaseConfig = {
   measurementId: "G-QY99E3QLYX"
 };
 
-const names = ["なーな", "らび", "みかてぃ"];
+const names = ["なーな", "らび", "みかてぃ", "ししゃも"];
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
@@ -202,91 +209,67 @@ function render() {
   const myName = myNameEl.value;
   membersEl.innerHTML = "";
 
-  for (const name of names) {
-    const user = data.users[name] || {};
-    const isMe = name === myName;
-    const isUsing = data.activeUser === name || user.using === true;
+  // 全体では「誰が使用中か」だけを表示し、他の人のカードは表示しない
+  const activeName = data.activeUser || names.find(name => data.users[name]?.using === true) || null;
+  const currentStatus = document.createElement("div");
+  currentStatus.className = "current-status " + (activeName ? "using" : "idle");
+  currentStatus.textContent = activeName
+    ? "🟢 現在使用中：" + activeName
+    : "⚪ 現在、使用中の人はいません";
+  membersEl.appendChild(currentStatus);
 
-    const card = document.createElement("article");
-    card.className = "member" + (isMe ? " mine" : "");
+  // 自分の操作だけを表示
+  const user = data.users[myName] || {};
+  const card = document.createElement("article");
+  card.className = "member mine own-controls";
 
-    const heading = document.createElement("h2");
-    heading.textContent = name;
-    if (isMe) {
-      const badge = document.createElement("span");
-      badge.className = "badge";
-      badge.textContent = "自分";
-      heading.appendChild(badge);
-    }
-    card.appendChild(heading);
+  const heading = document.createElement("h2");
+  heading.textContent = "自分の操作";
+  card.appendChild(heading);
 
-    const status = document.createElement("div");
-    status.className = "status";
-
-    if (isUsing) {
-      status.classList.add("using");
-      status.textContent = "🟢 使用中";
-    } else if (user.request) {
-      status.classList.add("request");
-      status.textContent = "🟡 使用希望あり";
-    } else {
-      status.classList.add("idle");
-      status.textContent = "⚪ 使用していません";
-    }
-    card.appendChild(status);
-
-    if (isUsing && user.startedAt) {
-      const since = document.createElement("div");
-      since.className = "small";
-      since.textContent = "開始時刻：" + showTime(user.startedAt);
-      card.appendChild(since);
-    }
-
-    if (!isMe) {
-      const note = document.createElement("p");
-      note.className = "small";
-      note.textContent = isUsing
-        ? "この人が現在使用しています"
-        : user.request
-          ? "使用希望を出しています"
-          : "現在は空いています";
-      card.appendChild(note);
-      membersEl.appendChild(card);
-      continue;
-    }
-
-    addButton(
-      card,
-      user.request ? "使用希望を取り消す" : "使いたい！",
-      "",
-      !ready || busy || isUsing,
-      () => changeRequest(!user.request)
-    );
-
-    addButton(
-      card,
-      "使用開始",
-      "primary",
-      !ready || busy || !!data.activeUser,
-      () => startUsing()
-    );
-
-    addButton(
-      card,
-      "使用終了",
-      "danger",
-      !ready || busy || data.activeUser !== myName,
-      () => endUsing()
-    );
-
-    membersEl.appendChild(card);
+  const ownStatus = document.createElement("div");
+  ownStatus.className = "status";
+  if (activeName === myName) {
+    ownStatus.classList.add("using");
+    ownStatus.textContent = "🟢 あなたが使用中です";
+  } else if (user.request) {
+    ownStatus.classList.add("request");
+    ownStatus.textContent = "🟡 使用希望を出しています";
+  } else {
+    ownStatus.classList.add("idle");
+    ownStatus.textContent = "⚪ あなたは使用していません";
   }
+  card.appendChild(ownStatus);
 
+  addButton(
+    card,
+    user.request ? "使用希望を取り消す" : "使いたい！",
+    "",
+    !ready || busy || !!activeName,
+    () => changeRequest(!user.request)
+  );
+
+  addButton(
+    card,
+    "使用開始",
+    "primary",
+    !ready || busy || !!activeName,
+    () => startUsing()
+  );
+
+  addButton(
+    card,
+    "使用終了",
+    "danger",
+    !ready || busy || activeName !== myName,
+    () => endUsing()
+  );
+
+  membersEl.appendChild(card);
+
+  // 履歴機能はデータとして維持するが、画面上には表示しない
   activityEl.innerHTML = "";
-  const history = Array.isArray(data.activity)
-    ? data.activity.slice(0, 20)
-    : [];
-
+  const history = Array.isArray(data.activity) ? data.activity.slice(0, 20) : [];
   if (history.length === 0) {
     const li = document.createElement("li");
     li.className = "empty";
@@ -295,10 +278,7 @@ function render() {
   } else {
     for (const item of history) {
       const li = document.createElement("li");
-      li.textContent =
-        showTime(item.time) + "　" +
-        String(item.name || "") + "： " +
-        String(item.message || "");
+      li.textContent = showTime(item.time) + "　" + String(item.name || "") + "： " + String(item.message || "");
       activityEl.appendChild(li);
     }
   }
@@ -435,7 +415,8 @@ async function startApp() {
         users: {
           "なーな": { request: false, using: false, startedAt: null },
           "らび": { request: false, using: false, startedAt: null },
-          "みかてぃ": { request: false, using: false, startedAt: null }
+          "みかてぃ": { request: false, using: false, startedAt: null },
+          "ししゃも": { request: false, using: false, startedAt: null }
         },
         activity: []
       });
